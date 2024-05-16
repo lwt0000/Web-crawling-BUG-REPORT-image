@@ -31,7 +31,9 @@ class BugSpider(scrapy.Spider):
         
 
         #find the number of people who have the same issue
-        num_pepole_has_same_issue = soup.find('a', class_='lia-link-navigation lia-rating-value-summary').text[0]
+        num_pepole_has_same_issue = soup.find('a', class_='lia-link-navigation lia-rating-value-summary')
+        if num_pepole_has_same_issue:
+            num_pepole_has_same_issue = num_pepole_has_same_issue.text[0]
         
 
         item = BugReportItem()
@@ -39,6 +41,7 @@ class BugSpider(scrapy.Spider):
         item['image_urls'] = image_urls
         item['original_post_url'] = response.url
         item['num_pepole_has_same_issue'] = int(num_pepole_has_same_issue)
+        item['images_names'] = []
         yield item
         
 
