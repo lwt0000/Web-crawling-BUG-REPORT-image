@@ -20,7 +20,17 @@ for img in images:
         file.write(image.content)
         file.close()
 
+
+num_pepole_has_same_issue = soup.find('a', class_='lia-link-navigation lia-rating-value-summary').text[0]
+print(int(num_pepole_has_same_issue))
+
+
+
+
+
 # save html 
-# with open('test.html', 'w') as file:
-#     file.write(response.text)
-#     file.close()
+with open('test.html', 'w') as file:
+    file.write(response.text)
+    file.close()
+
+

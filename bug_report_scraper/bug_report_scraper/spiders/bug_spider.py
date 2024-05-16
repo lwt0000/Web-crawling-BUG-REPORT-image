@@ -3,43 +3,6 @@ from bs4 import BeautifulSoup
 from bug_report_scraper.items import BugReportItem
 from urllib.parse import urljoin
 
-
-# class BugSpider(scrapy.Spider):
-#     name = 'bug_spider'
-#     start_urls = ['https://answers.ea.com/t5/Bug-Reports/bd-p/wrc-bug-reports-en/page/2']
-
-#     def parse_thread(self, response):
-#         # text = response.css('div.lia-message-body-content span::text').getall()
-#         # description = ' '.join(text)
-
-
-#         image_url = response.css('a.lia-link-navigation.attachment-link::attr(href)').get()
-
-
-#         original_post = response.css('div.lia-message-body-content').getall()[0]
-
-#         # Extracting all text within this div
-#         text = ''.join(response.xpath("string(//div[@class='lia-message-body-content'][1])").get())
-
-#         # Clean up the text to replace multiple whitespaces with a single space
-#         cleaned_text = ' '.join(text.split())
-        
-   
-
-#         #if no image, skip
-#         if image_url is None:
-#             return
-
-#         yield {
-#             'description': cleaned_text,
-#             'image_urls': image_url
-#         }
-
-#     def parse(self, response):
-#         thread_links = response.css('a.page-link.lia-link-navigation.lia-custom-event::attr(href)').getall()
-#         for link in thread_links:
-#             yield response.follow(link, self.parse_thread)
-
 class BugSpider(scrapy.Spider):
     name = 'bug_spider'
     start_urls = ['https://answers.ea.com/t5/Bug-Reports/bd-p/wrc-bug-reports-en']
@@ -65,10 +28,17 @@ class BugSpider(scrapy.Spider):
 
         if not image_urls:
             return
+        
+
+        #find the number of people who have the same issue
+        num_pepole_has_same_issue = soup.find('a', class_='lia-link-navigation lia-rating-value-summary').text[0]
+        
 
         item = BugReportItem()
         item['description'] = original_post_text
         item['image_urls'] = image_urls
+        item['original_post_url'] = response.url
+        item['num_pepole_has_same_issue'] = int(num_pepole_has_same_issue)
         yield item
         
 
@@ -80,5 +50,5 @@ class BugSpider(scrapy.Spider):
         
         next_page = response.css('a.lia-link-navigation.lia-js-data-pageNum-2.lia-custom-event::attr(href)').get()
         
-        if next_page is not None:
-            yield response.follow(next_page, callback=self.parse)
+        # if next_page is not None:
+        #     yield response.follow(next_page, callback=self.parse)

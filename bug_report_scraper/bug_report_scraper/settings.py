@@ -61,8 +61,8 @@ ROBOTSTXT_OBEY = True
 #}
 
 # Configure item pipelines
-ITEM_PIPELINES = {'scrapy.pipelines.images.ImagesPipeline': 1}
-IMAGES_STORE = '/Users/luwentao/Downloads/Web-crawling-BUG-REPORT-image/bug_report_scraper/bug_report_images'
+# ITEM_PIPELINES = {'scrapy.pipelines.images.ImagesPipeline': 1}
+# IMAGES_STORE = '/Users/luwentao/Downloads/Web-crawling-BUG-REPORT-image/bug_report_scraper/bug_report_images'
 # IMAGES_THUMBS = {
 #     'small': (50, 50),
 #     'big': (270, 270),
