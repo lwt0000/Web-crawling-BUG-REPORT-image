@@ -50,5 +50,5 @@ class BugSpider(scrapy.Spider):
         
         next_page = response.css('a.lia-link-navigation.lia-js-data-pageNum-2.lia-custom-event::attr(href)').get()
         
-        # if next_page is not None:
-        #     yield response.follow(next_page, callback=self.parse)
+        if next_page is not None:#comment this line if don't want to scrape all pages
+            yield response.follow(next_page, callback=self.parse)
