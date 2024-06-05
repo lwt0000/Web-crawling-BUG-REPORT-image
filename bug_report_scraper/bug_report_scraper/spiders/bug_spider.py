@@ -21,7 +21,7 @@ class BugSpider(scrapy.Spider):
         #look for images
         images = soup.find_all('a', class_='lia-link-navigation attachment-link')
         base_url = self.domain
-        
+        # print("HHHHHHHHHHHHHHHHH")
         for img in images:
             download_url = img.find('span')['li-download-url']
             #if the last 3 characters are not png, jpg or jpeg, skip the image
@@ -34,7 +34,7 @@ class BugSpider(scrapy.Spider):
         link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.post_page_id)
         next_page = response.css(link).get()
         if next_page is not None:
-            post_page_id = self.post_page_id + 1
+            self.post_page_id = self.post_page_id + 1
             yield response.follow(next_page, callback=self.check_pages_in_each_thread)
 
     def parse_thread(self, response):
@@ -65,8 +65,7 @@ class BugSpider(scrapy.Spider):
             num_people_has_same_issue = num_people_has_same_issue.text[0]
 
 
-        if not self.image_urls:
-            return
+        
 
         # scrape the other pages inside this post if there are any
         link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.post_page_id)
@@ -75,7 +74,8 @@ class BugSpider(scrapy.Spider):
             self.post_page_id += 1
             yield response.follow(next_page, callback=self.check_pages_in_each_thread)
 
-        
+        if not self.image_urls:
+            return
 
         item = BugReportItem()
         item['description'] = original_post_text
