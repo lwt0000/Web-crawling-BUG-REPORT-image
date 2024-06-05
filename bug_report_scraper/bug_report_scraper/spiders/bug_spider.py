@@ -10,6 +10,7 @@ class BugSpider(scrapy.Spider):
     domain = 'https://answers.ea.com'
     main_page_id = 2 #used for pagination of the main bug report page
     post_page_id = 2 #used for pagination of the post page
+    image_urls =[]
     def __init__(self, start_urls=None, game_name=None, *args, **kwargs):
         super(BugSpider, self).__init__(*args, **kwargs)
         if start_urls:
@@ -20,7 +21,7 @@ class BugSpider(scrapy.Spider):
         #look for images
         images = soup.find_all('a', class_='lia-link-navigation attachment-link')
         base_url = self.domain
-        image_urls =[]
+        
         for img in images:
             download_url = img.find('span')['li-download-url']
             #if the last 3 characters are not png, jpg or jpeg, skip the image
@@ -28,10 +29,17 @@ class BugSpider(scrapy.Spider):
                 #this need improvement
                 continue
             full_url = urljoin(base_url, download_url)
-            image_urls.append(full_url)
-        return image_urls
+            self.image_urls.append(full_url)
+        # scrape the other pages inside this post if there are any
+        link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.post_page_id)
+        next_page = response.css(link).get()
+        if next_page is not None:
+            post_page_id = self.post_page_id + 1
+            yield response.follow(next_page, callback=self.check_pages_in_each_thread)
 
     def parse_thread(self, response):
+        #reset the image urls here
+        self.image_urls = []
         soup = BeautifulSoup(response.text, 'lxml')
         original_post_div = soup.find('div', class_='lia-message-body-content')#find the first post in this thread  
         
@@ -42,7 +50,7 @@ class BugSpider(scrapy.Spider):
 
         images = soup.find_all('a', class_='lia-link-navigation attachment-link')
         base_url = self.domain
-        image_urls =[]
+        
         for img in images:
             download_url = img.find('span')['li-download-url']
             #if the last 3 characters are not png, jpg or jpeg, skip the image
@@ -50,41 +58,43 @@ class BugSpider(scrapy.Spider):
                 #this need improvement
                 continue
             full_url = urljoin(base_url, download_url)
-            image_urls.append(full_url)
+            self.image_urls.append(full_url)
 
-        # scrape the other pages inside this post if there are any
-        link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.main_page_id)
-        next_page = response.css(link).get()
-        if next_page is not None:
-            lst = self.check_pages_in_each_thread(next_page)
-            #appeend
-            image_urls.extend(lst)
+        num_people_has_same_issue = soup.find('a', class_='lia-link-navigation lia-rating-value-summary')
+        if num_people_has_same_issue:
+            num_people_has_same_issue = num_people_has_same_issue.text[0]
 
-        if not image_urls:
+
+        if not self.image_urls:
             return
 
-        num_pepole_has_same_issue = soup.find('a', class_='lia-link-navigation lia-rating-value-summary')
-        if num_pepole_has_same_issue:
-            num_pepole_has_same_issue = num_pepole_has_same_issue.text[0]
+        # scrape the other pages inside this post if there are any
+        link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.post_page_id)
+        next_page = response.css(link).get()
+        if next_page is not None:
+            self.post_page_id += 1
+            yield response.follow(next_page, callback=self.check_pages_in_each_thread)
+
+        
 
         item = BugReportItem()
         item['description'] = original_post_text
-        item['image_urls'] = image_urls
+        item['image_urls'] = self.image_urls
         item['original_post_url'] = response.url
         #try converting the number of people to int, if it fails, set it to 0, not every post has this, ex. replys under the original post
         try:
-            item['num_pepole_has_same_issue'] = int(num_pepole_has_same_issue)
+            item['num_people_has_same_issue'] = int(num_people_has_same_issue)
         except:
-            item['num_pepole_has_same_issue'] = 0
+            item['num_people_has_same_issue'] = 0
         item['images_names'] = []
 
-        #reset page id for the next thread
-        self.post_page_id = 2
         yield item
 
     def parse(self, response):
         thread_links = response.css('a.page-link.lia-link-navigation.lia-custom-event::attr(href)').getall()
         for link in thread_links:
+            #reset page id for the next thread
+            self.post_page_id = 2
             yield response.follow(link, self.parse_thread)
         #go to next page in the bug report main page
         link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.main_page_id)
@@ -93,3 +103,7 @@ class BugSpider(scrapy.Spider):
         
         if next_page is not None:
             yield response.follow(next_page, callback=self.parse)
+
+
+
+
