@@ -21,14 +21,17 @@ class BugSpider(scrapy.Spider):
         #look for images
         images = soup.find_all('a', class_='lia-link-navigation attachment-link')
         base_url = self.domain
-        # print("HHHHHHHHHHHHHHHHH")
+        
         for img in images:
             download_url = img.find('span')['li-download-url']
+            
             #if the last 3 characters are not png, jpg or jpeg, skip the image
             if download_url[-3:] not in ['png', 'jpg', 'jpeg','bmp','heic']:
                 #this need improvement
                 continue
             full_url = urljoin(base_url, download_url)
+            print(full_url)
+            print('original post url:', response.url)
             self.image_urls.append(full_url)
         # scrape the other pages inside this post if there are any
         link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.post_page_id)
@@ -38,8 +41,6 @@ class BugSpider(scrapy.Spider):
             yield response.follow(next_page, callback=self.check_pages_in_each_thread)
 
     def parse_thread(self, response):
-        #reset the image urls here
-        self.image_urls = []
         soup = BeautifulSoup(response.text, 'lxml')
         original_post_div = soup.find('div', class_='lia-message-body-content')#find the first post in this thread  
         
@@ -95,6 +96,8 @@ class BugSpider(scrapy.Spider):
         for link in thread_links:
             #reset page id for the next thread
             self.post_page_id = 2
+            #reset the image urls here
+            self.image_urls = []
             yield response.follow(link, self.parse_thread)
         #go to next page in the bug report main page
         link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.main_page_id)
