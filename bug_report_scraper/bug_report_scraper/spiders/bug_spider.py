@@ -384,8 +384,8 @@ class BugSpider(scrapy.Spider):
         for link in thread_links:
             yield response.follow(link, self.parse_thread)
 
-        # link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.main_page_id)
-        # self.main_page_id += 1
-        # next_page = response.css(link).get()
-        # if next_page is not None:
-        #     yield response.follow(next_page, callback=self.parse)
+        link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.main_page_id)
+        self.main_page_id += 1
+        next_page = response.css(link).get()
+        if next_page is not None:
+            yield response.follow(next_page, callback=self.parse)
