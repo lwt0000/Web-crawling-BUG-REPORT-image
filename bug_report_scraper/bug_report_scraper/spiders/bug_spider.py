@@ -356,7 +356,7 @@ class BugSpider(scrapy.Spider):
             yield request
         else:
             item['image_urls'] = self.image_urls
-            if not item['image_urls']:
+            if item['image_urls'] is None or not item['image_urls']:  # Check if image_urls is None or empty
                 return
             yield item
 

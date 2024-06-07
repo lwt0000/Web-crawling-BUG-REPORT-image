@@ -22,7 +22,11 @@ def download_images_and_update_json(json_file):
     for row in data:
         image_urls = row.get('image_urls', [])
         image_names = []
-        
+
+        # if image urls are empty, delete this row and update the json file
+        if not image_urls:
+            data.remove(row)
+            continue
         for url in image_urls:
             try:
                 response = requests.get(url, stream=True)
