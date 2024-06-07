@@ -315,14 +315,15 @@ class BugSpider(scrapy.Spider):
             download_url = img.find('span')['li-download-url']
             if download_url.split('.')[-1].lower() in ['png', 'jpg', 'jpeg', 'bmp', 'heic']:
                 full_url = urljoin(base_url, download_url)
-                print(full_url)
+                # print(full_url)
                 self.image_urls.append(full_url)
 
     def parse_thread(self, response):
         item = BugReportItem()
         item['image_urls'] = []
         self.image_urls = []
-        print('re-initialize image_urls')
+        # print('re-initialize image_urls')
+        
         self.post_page_id = 2
 
         item['original_post_url'] = response.url
@@ -346,8 +347,8 @@ class BugSpider(scrapy.Spider):
         link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.post_page_id)
         next_page = response.css(link).get()
         if next_page is not None:
-            print('next page id:', self.post_page_id)
-            print('url:', next_page)
+            # print('next page id:', self.post_page_id)
+            # print('url:', next_page)
             self.post_page_id += 1
 
             request = response.follow(next_page, callback=self.check_pages_in_each_thread)
@@ -369,8 +370,8 @@ class BugSpider(scrapy.Spider):
         link = 'a.lia-link-navigation.lia-js-data-pageNum-{id}.lia-custom-event::attr(href)'.format(id=self.post_page_id)
         next_page = response.css(link).get() 
         if next_page is not None:
-            print('next page id:', self.post_page_id)
-            print('url:', next_page)
+            # print('next page id:', self.post_page_id)
+            # print('url:', next_page)
             self.post_page_id += 1
             request = response.follow(next_page, callback=self.check_pages_in_each_thread)
             request.meta['item'] = item
