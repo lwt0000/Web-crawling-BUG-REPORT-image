@@ -358,7 +358,8 @@ class BugSpider(scrapy.Spider):
             item['image_urls'] = self.image_urls
             if item['image_urls'] is None or not item['image_urls']:  # Check if image_urls is None or empty
                 return
-            yield item
+            else:
+                yield item
 
     def check_pages_in_each_thread(self, response):
         # we are now in the next page of the thread
