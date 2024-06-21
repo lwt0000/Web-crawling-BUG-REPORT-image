@@ -4,7 +4,7 @@ import base64
 import os
 import random
 import glob
-sample_size = 96
+sample_sizes = 96
 path = os.getcwd() + "Web-crawling-BUG-REPORT-image/data/images"
 data_path = os.getcwd() + "Web-crawling-BUG-REPORT-image/data"
 images_path = "data/images/"
@@ -21,8 +21,10 @@ def sample_data_QA(json_file):
     
     #randomly select sample_size number of rows
     # if sample_size is greater than the total number of rows, set sample_size to the total number of rows
-    if sample_size > len(data):
+    if sample_sizes > len(data):
         sample_size = len(data)
+    else:
+        sample_size = sample_sizes
     random_rows = random.sample(data, sample_size)
     #for each row extract images names and descriptions
     for i, row in enumerate(random_rows):
