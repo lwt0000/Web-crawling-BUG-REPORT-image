@@ -20,6 +20,9 @@ def sample_data_QA(json_file):
         data = json.load(file)
     
     #randomly select sample_size number of rows
+    # if sample_size is greater than the total number of rows, set sample_size to the total number of rows
+    if sample_size > len(data):
+        sample_size = len(data)
     random_rows = random.sample(data, sample_size)
     #for each row extract images names and descriptions
     for i, row in enumerate(random_rows):
