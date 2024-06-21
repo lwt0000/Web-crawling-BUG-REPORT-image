@@ -2,3 +2,4 @@
 data/*
 log.txt
 work_dir/*
+ollama_data/*
