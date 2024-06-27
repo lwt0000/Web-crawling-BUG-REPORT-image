@@ -58,3 +58,21 @@ for json_file in json_files:
     download_images_and_update_json(json_file)
 
 print('All images downloaded and JSON files updated successfully.')
+
+
+
+json_files = glob.glob('data/*.json')
+row_removed = 0
+
+for json_file in json_files:
+    with open(json_file, 'r') as file:
+        data = json.load(file)
+    
+    original_length = len(data)
+    data = [row for row in data if len(row['images_names']) != 0 and len(row['image_urls']) != 0]
+    row_removed += original_length - len(data)
+    
+    with open(json_file, 'w', newline='') as file:
+        json.dump(data, file, indent=4)
+
+print(f'{row_removed} empty rows removed from JSON files.')
